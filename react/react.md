@@ -124,11 +124,117 @@ export default () => {
   );
 };
 ```
-**总结： react 里面当直接获取不到ref来操作DOM和组件实例的情况下，可以通过forwardRef来转发ref**
 
+**总结： react 里面当直接获取不到 ref 来操作 DOM 和组件实例的情况下，可以通过 forwardRef 来转发 ref**
 
 ### lazy && Suspence
 
 React.lazy 和 Suspense 技术还不支持服务端渲染。如果你想要在使用服务端渲染的应用中使用，推荐 Loadable Components 这个库
 
-React.lazy和Suspense配合一起用，能够有动态加载组件的效果。React.lazy 接受一个函数，这个函数需要动态调用 import()。它必须返回一个 Promise ，该 Promise 需要 resolve 一个 default export 的 React 组件。
+React.lazy 和 Suspense 配合一起用，能够有动态加载组件的效果。React.lazy 接受一个函数，这个函数需要动态调用 import()。它必须返回一个 Promise ，该 Promise 需要 resolve 一个 default export 的 React 组件。
+
+```jsx
+import Test from "./comTest"; // 引入一个子组件
+const LazyComponent = React.lazy(
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          default: () => <Test />,
+        });
+      }, 2000);
+    })
+);
+class index extends React.Component {
+  render() {
+    return (
+      <div className="context_box" style={{ marginTop: "50px" }}>
+        <React.Suspense
+          fallback={
+            <div className="icon">
+              <SyncOutlined spin />
+            </div>
+          }
+        >
+          <LazyComponent />
+        </React.Suspense>
+      </div>
+    );
+  }
+}
+```
+
+**Suspense 让组件“等待”某个异步操作，直到该异步操作结束即可渲染**
+
+由可以等待异步操作不难看出，可以用来等待数据获取，可以用来等待图像、脚本、或其它异步操作
+
+#### Fragment
+
+这里唯一想说的是 Fragment 和 <></>区别，fragment 可以支持 key 属性，<></>不支持 key 属性
+
+#### Profiler
+
+这个 api 一般会用于开发阶段，用于性能检测，检测一次 react 组件渲染用时，性能的开销。
+
+有两个参数
+
+- id ，用于标识唯一性
+- onRender 回调函数，用于渲染完成回调，接受渲染参数
+
+```jsx
+const index = () => {
+  const callback = (...arg) => console.log(arg);
+  return (
+    <>
+      <Profiler id="root" onRender={callback}>
+        <Router>
+          <Meuns />
+          <KeepaliveRouterSwitch withoutRoute>
+            {renderRoutes(menusList)}
+          </KeepaliveRouterSwitch>
+        </Router>
+      </Profiler>
+    </>
+  );
+};
+```
+
+#### strictMode
+
+严格模式，用于检测 react 项目中的潜在问题，不会渲染 UI，他为后代元素触发格外的检查和警告，不会影响生产构键。
+
+优点：
+
+- 识别不安全的生命周期
+- 使用过时的字符串的 ref API 的警告
+- 使用废弃的 findDOMNode 方法的警告
+- 检测意外的副作用
+- 检测过时的 context API
+
+## 工具类函数
+
+#### createElement
+
+jsx 语法最终还是要通过 babel 的转译成用 react 函数的形式
+
+```jsx
+render() {
+  React.createElement('div',{className: 'box'},'内容可以再嵌套createElement的函数')
+}
+```
+理论上我们可以直接使用createElement来开发，不用jsx语法，但是大多人会这么搞？
+
+```js
+// createElement模型
+React.createElement(
+  type,
+  [props],
+  [...children]
+)
+```
+
+createElement做了什么？
+
+通过createElement处理，最终会形成 $$typeof = Symbol(react.element) 对象。
+
+
