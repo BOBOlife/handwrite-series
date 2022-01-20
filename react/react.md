@@ -238,3 +238,49 @@ createElement做了什么？
 通过createElement处理，最终会形成 $$typeof = Symbol(react.element) 对象。
 
 
+####  cloneElement 
+
+那么cloneElement感觉在我们实际业务组件中，可能没什么用，但是在一些开源项目，或者是公共插槽组件中用处还是蛮大的，比如说，我们可以在组件中，劫持children element，然后通过cloneElement克隆element，混入props。经典的案例就是 react-router中的Swtich组件，通过这种方式，来匹配唯一的 Route并加以渲染。
+
+这个先TODO
+
+#### createContext 
+
+createContext 用来创建一个Context对象。createContext对象中存在用于传递Context对象值value的Provider，和接受value变化订阅的Consumer。 
+
+这就是发布订阅呀！！！ 果然编程世界里面的名字很不同然而核心都是一样的XD
+```js
+  const myContext = React.createContext(defaultValue) // Consumer的上级树都没有匹配到Provider时，用defaultValue作为value。 
+```
+小总结：Provider和Consumer的良好的特性，可以做数据的存和取，Consumer一方面传递的value，另一方面可以订阅value的改变。
+Provider还有一个特性可以层层传递value，这种特性在react-redux中表现的淋漓尽致。
+
+
+#### React.Children
+
+5个api：
+-  Children.map
+-  Children.forEarch 
+-  Children.count
+-  Children.toArray
+-  Children.only
+
+React.Children 提供了用于处理 this.props.children**不透明数据结构**（所以不直接用map，forEach）的实用方法
+
+注意 如果 children 是一个 Fragment 对象，它将被视为单一子节点的情况处理，而不会被遍历。
+
+Children.forEach和Children.map 用法类似，Children.map可以返回新的数组，Children.forEach仅停留在遍历阶段。
+
+children 中的组件总数量，等同于通过 map 或 forEach 调用回调函数的次数。对于更复杂的结果，Children.count可以返回同一级别子组件的数量。
+
+Children.toArray返回，props.children扁平化后结果。
+
+Children.only验证 children 是否只有一个子节点（一个 React 元素），如果有则返回它，否则此方法会抛出错误。
+
+
+## React Hooks
+
+
+
+
+
