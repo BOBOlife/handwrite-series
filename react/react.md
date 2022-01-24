@@ -333,5 +333,9 @@ const goodListChild  = useMemo(()=> <GoodList list={ props.list }>, [props.list]
 
 ```
 
+#### useCallback
 
+useMemo和useCallback 接受的参数都是一样的，都是在依赖项发生变化后才执行，都是返回缓存的值。
+
+区别： useMemo返回的是函数运行的结果，useCallback返回的是函数，返回的callback可以作为props回调函数传递给子组件。
 
