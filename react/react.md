@@ -124,11 +124,218 @@ export default () => {
   );
 };
 ```
-**总结： react 里面当直接获取不到ref来操作DOM和组件实例的情况下，可以通过forwardRef来转发ref**
 
+**总结： react 里面当直接获取不到 ref 来操作 DOM 和组件实例的情况下，可以通过 forwardRef 来转发 ref**
 
 ### lazy && Suspence
 
 React.lazy 和 Suspense 技术还不支持服务端渲染。如果你想要在使用服务端渲染的应用中使用，推荐 Loadable Components 这个库
 
-React.lazy和Suspense配合一起用，能够有动态加载组件的效果。React.lazy 接受一个函数，这个函数需要动态调用 import()。它必须返回一个 Promise ，该 Promise 需要 resolve 一个 default export 的 React 组件。
+React.lazy 和 Suspense 配合一起用，能够有动态加载组件的效果。React.lazy 接受一个函数，这个函数需要动态调用 import()。它必须返回一个 Promise ，该 Promise 需要 resolve 一个 default export 的 React 组件。
+
+```jsx
+import Test from "./comTest"; // 引入一个子组件
+const LazyComponent = React.lazy(
+  () =>
+    new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          default: () => <Test />,
+        });
+      }, 2000);
+    })
+);
+class index extends React.Component {
+  render() {
+    return (
+      <div className="context_box" style={{ marginTop: "50px" }}>
+        <React.Suspense
+          fallback={
+            <div className="icon">
+              <SyncOutlined spin />
+            </div>
+          }
+        >
+          <LazyComponent />
+        </React.Suspense>
+      </div>
+    );
+  }
+}
+```
+
+**Suspense 让组件“等待”某个异步操作，直到该异步操作结束即可渲染**
+
+由可以等待异步操作不难看出，可以用来等待数据获取，可以用来等待图像、脚本、或其它异步操作
+
+#### Fragment
+
+这里唯一想说的是 Fragment 和 <></>区别，fragment 可以支持 key 属性，<></>不支持 key 属性
+
+#### Profiler
+
+这个 api 一般会用于开发阶段，用于性能检测，检测一次 react 组件渲染用时，性能的开销。
+
+有两个参数
+
+- id ，用于标识唯一性
+- onRender 回调函数，用于渲染完成回调，接受渲染参数
+
+```jsx
+const index = () => {
+  const callback = (...arg) => console.log(arg);
+  return (
+    <>
+      <Profiler id="root" onRender={callback}>
+        <Router>
+          <Meuns />
+          <KeepaliveRouterSwitch withoutRoute>
+            {renderRoutes(menusList)}
+          </KeepaliveRouterSwitch>
+        </Router>
+      </Profiler>
+    </>
+  );
+};
+```
+
+#### strictMode
+
+严格模式，用于检测 react 项目中的潜在问题，不会渲染 UI，他为后代元素触发格外的检查和警告，不会影响生产构键。
+
+优点：
+
+- 识别不安全的生命周期
+- 使用过时的字符串的 ref API 的警告
+- 使用废弃的 findDOMNode 方法的警告
+- 检测意外的副作用
+- 检测过时的 context API
+
+## 工具类函数
+
+#### createElement
+
+jsx 语法最终还是要通过 babel 的转译成用 react 函数的形式
+
+```jsx
+render() {
+  React.createElement('div',{className: 'box'},'内容可以再嵌套createElement的函数')
+}
+```
+理论上我们可以直接使用createElement来开发，不用jsx语法，但是大多人会这么搞？
+
+```js
+// createElement模型
+React.createElement(
+  type,
+  [props],
+  [...children]
+)
+```
+
+createElement做了什么？
+
+通过createElement处理，最终会形成 $$typeof = Symbol(react.element) 对象。
+
+
+####  cloneElement 
+
+那么cloneElement感觉在我们实际业务组件中，可能没什么用，但是在一些开源项目，或者是公共插槽组件中用处还是蛮大的，比如说，我们可以在组件中，劫持children element，然后通过cloneElement克隆element，混入props。经典的案例就是 react-router中的Swtich组件，通过这种方式，来匹配唯一的 Route并加以渲染。
+
+这个先TODO
+
+#### createContext 
+
+createContext 用来创建一个Context对象。createContext对象中存在用于传递Context对象值value的Provider，和接受value变化订阅的Consumer。 
+
+这就是发布订阅呀！！！ 果然编程世界里面的名字很不同然而核心都是一样的XD
+```js
+  const myContext = React.createContext(defaultValue) // Consumer的上级树都没有匹配到Provider时，用defaultValue作为value。 
+```
+小总结：Provider和Consumer的良好的特性，可以做数据的存和取，Consumer一方面传递的value，另一方面可以订阅value的改变。
+Provider还有一个特性可以层层传递value，这种特性在react-redux中表现的淋漓尽致。
+
+
+#### React.Children
+
+5个api：
+-  Children.map
+-  Children.forEarch 
+-  Children.count
+-  Children.toArray
+-  Children.only
+
+React.Children 提供了用于处理 this.props.children**不透明数据结构**（所以不直接用map，forEach）的实用方法
+
+注意 如果 children 是一个 Fragment 对象，它将被视为单一子节点的情况处理，而不会被遍历。
+
+Children.forEach和Children.map 用法类似，Children.map可以返回新的数组，Children.forEach仅停留在遍历阶段。
+
+children 中的组件总数量，等同于通过 map 或 forEach 调用回调函数的次数。对于更复杂的结果，Children.count可以返回同一级别子组件的数量。
+
+Children.toArray返回，props.children扁平化后结果。
+
+Children.only验证 children 是否只有一个子节点（一个 React 元素），如果有则返回它，否则此方法会抛出错误。
+
+
+## React Hooks
+
+#### useState
+
+useState 可以弥补函数组件没有state的缺陷,useState 可以接受一个初始值，也可以是一个函数action，action 返回值作为新的state
+
+#### useEffect
+
+useEffect 可以弥补函数组件没有生命周期的缺点，我们可以在useEffect第一个参数回调函数中，做一些请求数据，事件监听等操作。第二个参数作为dep 依赖项，当依赖项发生变化的时候，重新执行第一个函数。
+
+在第一个函数中如果监听了事件，记得在return 一个函数用来清除 事件监听等操作。
+
+
+#### useMemo
+
+useMemo接受两个参数，第一个参数是一个函数，返回值用于产生保存值。第二个参数是一个数组，做为dep依赖项，数组里面的依赖项发生变化，重新执行第一个函数，产生新的值。
+
+应用场景：
+- 1. 缓存一些值，避免重新执行上下文
+```jsx
+
+const number = useMemo(()=> {
+  /* ......大量逻辑运算 */
+  return number
+},[props.number]) // 只有props.number 改变的时候，重新计算number的值
+```
+
+- 2. 减少不必要的dom循环
+
+```jsx
+/*用useMemo包裹的list可以限定当且仅当list改变的时候才更新list，这样可以避免selectlist重新循环*/
+
+{
+  useMemo(() => (
+    <div>
+      {
+        selectList.map((i,v) => (
+          <span className={style.listSpan} key={v}> { i.patentName }</span>  
+        ))
+      }
+    </div>
+  ), [selectList])
+
+}
+```
+
+
+- 3. 减少子组件的渲染
+
+```jsx
+/*只有当props中，list列表改变的时候，子组件才渲染*/
+const goodListChild  = useMemo(()=> <GoodList list={ props.list }>, [props.list])
+
+```
+
+#### useCallback
+
+useMemo和useCallback 接受的参数都是一样的，都是在依赖项发生变化后才执行，都是返回缓存的值。
+
+区别： useMemo返回的是函数运行的结果，useCallback返回的是函数，返回的callback可以作为props回调函数传递给子组件。
+
