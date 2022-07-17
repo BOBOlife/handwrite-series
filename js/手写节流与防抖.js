@@ -1,3 +1,6 @@
+// 防抖和节流的相同点
+// 都是为了阻止操作的高频触发，从而浪费性能
+
 // 节流（一段时间内只执行一次）
 function throttle(fn, delay) {
   let canUse = true;
