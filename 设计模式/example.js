@@ -1,4 +1,4 @@
-// 单例模式的验证
+// 单例模式的验证··
 import xxx from './index.js';
 const a = new xxx()
 
