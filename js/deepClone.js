@@ -18,3 +18,20 @@ function deepClone(obj) {
   }
   return objClone;
 }
+
+function newDeepClone(obj) {
+  if ([null, undefined].includes(obj)) return obj
+  if (obj instanceof Date) return new Date(obj)
+  if (obj instanceof RegExp) return new RegExp(obj)
+  if (typeof obj !== 'object') return obj
+  let cloneObj = obj.constructor
+  for (let key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      cloneObj[key] = newDeepClone(obj[key])
+    }
+  }
+  return cloneObj
+}
+
+
+
