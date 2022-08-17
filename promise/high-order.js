@@ -47,11 +47,11 @@ function isType(type) {
 const currying = (fn, arr = []) => {
   let len = fn.length // 这里获取的是函数参数的个数
   return function (...args) { // 高阶函数
-    arr = [...arr, ...args]
+    let concatValue = [...arr, ...args]
     if (arr.length < len) {
       return currying(fn, arr) // 递归不停的产生函数
     } else {
-      return fn(...arr)
+      return fn(...concatValue)
     }
   }
 }
