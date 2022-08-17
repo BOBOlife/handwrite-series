@@ -49,7 +49,7 @@ const currying = (fn, arr = []) => {
   return function (...args) { // 高阶函数
     let concatValue = [...arr, ...args]
     if (arr.length < len) {
-      return currying(fn, arr) // 递归不停的产生函数
+      return currying(fn, concatValue) // 递归不停的产生函数
     } else {
       return fn(...concatValue)
     }
