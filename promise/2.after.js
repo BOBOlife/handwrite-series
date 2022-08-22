@@ -11,9 +11,17 @@ let result = {}
 //   }
 // }
 
+function after(times, callback) {
+  return function () { // 闭包函数 
+    if (--times === 0) callback()
+  }
+}
+
+
 const cb = after(2, function () {
-  console.log();
+  console.log(result);
 })
+
 
 fs.readFile('./name.txt', 'utf8', function (err, data) {
   result.name = data
