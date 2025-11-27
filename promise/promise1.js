@@ -1,4 +1,4 @@
-class Mypromise {
+class MyPromise {
   constructor(executor) {
     this.status = 'pending' // promise状态
     this.value = undefined // 成功的值
@@ -36,7 +36,7 @@ class Mypromise {
     onRejected = typeof onRejected === 'function' ? onRejected : (reason) => { throw reason }
 
 
-    const promise2 = new Mypromise((resolve, reject) => {
+    const promise2 = new MyPromise((resolve, reject) => {
       if (this.status === 'fulfilled') {
         queueMicrotask(() => {
           try {
@@ -88,7 +88,7 @@ class Mypromise {
       return reject(new TypeError('Chaining cycle detected for promise'))
     }
     //2. x 是否是Promise的实例对象
-    if (x instanceof Mypromise) {
+    if (x instanceof MyPromise) {
       x.then((y) => {
         this.resolvePromise(promise2, y, resolve, reject)
       }, reject)
