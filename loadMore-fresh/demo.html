@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>下拉刷新和上拉加载演示</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+
+    .content {
+      margin-top: 50px;
+      padding: 10px;
+      min-height: calc(100vh - 50px);
+    }
+
+    .item {
+      background: #fff;
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .item-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .item-desc {
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>下拉刷新 & 上拉加载</h1>
+  </div>
+
+  <div class="content" id="content">
+    <!-- 内容将通过 JS 动态生成 -->
+  </div>
+
+  <script src="index.js"></script>
+  <script>
+    // 模拟数据
+    let currentPage = 1;
+    let itemCount = 0;
+
+    // 生成列表项
+    function generateItems(count) {
+      const content = document.getElementById('content');
+      for (let i = 0; i < count; i++) {
+        itemCount++;
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.innerHTML = `
+                    <div class="item-title">列表项 ${itemCount}</div>
+                    <div class="item-desc">这是第 ${itemCount} 条数据</div>
+                `;
+        content.appendChild(item);
+      }
+    }
+
+    // 初始化列表
+    generateItems(10);
+
+    // 初始化下拉刷新和上拉加载
+    const pullRefresh = new PullRefresh({
+      container: document.getElementById('content'),
+
+      // 下拉刷新回调
+      onRefresh: async () => {
+        console.log('开始刷新...');
+        // 模拟网络请求
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        // 清空内容并重新加载
+        document.getElementById('content').innerHTML = '';
+        itemCount = 0;
+        currentPage = 1;
+        generateItems(10);
+
+        // 重置加载更多状态
+        pullRefresh.resetLoadMore();
+
+        console.log('刷新完成!');
+      },
+
+      // 上拉加载更多回调
+      onLoadMore: async () => {
+        console.log('开始加载更多...');
+        // 模拟网络请求
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        currentPage++;
+
+        // 模拟最多加载5页
+        if (currentPage > 5) {
+          console.log('没有更多数据了');
+          return false; // 返回 false 表示没有更多数据
+        }
+
+        generateItems(10);
+        console.log('加载完成!');
+        return true; // 返回 true 表示还有更多数据
+      }
+    });
+  </script>
+</body>
+
+</html>
