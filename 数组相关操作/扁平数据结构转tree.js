@@ -100,3 +100,18 @@ function arrayToTree(items) {
 }
 
 // 总结 这个版本 写的一般 还需要优化
+
+
+
+function arr2Tree(node, list) {
+  
+  const children = list.filter(item => item.pid === node.id)
+
+  if(children.length > 0) {
+    node.children = children.map(item => arr2Tree(item, list))
+
+  }
+
+  return node
+
+}
